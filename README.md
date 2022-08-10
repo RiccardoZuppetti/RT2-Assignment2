@@ -2,7 +2,7 @@
 
 In this branch it is possible to find the code to execute the project, without any documentation.
 
-# How to run
+# How to Run
 
 Verify that you have installed ROS Noetic. Create a ROS Workspace and clone this ROS package inside it
 
