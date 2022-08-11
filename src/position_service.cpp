@@ -1,12 +1,12 @@
-/** @ package rt2_assignment2
+/** @package rt2_assignment2
 * 
-*  @file position_service.cpp
-*  @brief This file implements the position service
+*   @file state_machine.cpp
+*   @brief This file implements the FSM
 *
-*  @author Riccardo Zuppetti
-*  @version 1.0
-*  @date 06/06/2022
-*  @details
+*   @author Riccardo Zuppetti
+*   @version 1.0
+*   @date 06/06/2022
+*   @details
 *   
 *  Subscribes to: <BR>
 *	 None
