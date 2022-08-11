@@ -1,4 +1,4 @@
-/** @ package rt2_assignment2
+/** @package rt2_assignment2
 * 
 *   @file state_machine.cpp
 *   @brief This file implements the FSM
