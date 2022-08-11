@@ -7,7 +7,7 @@ In this branch it is possible to find the code to execute the project with the S
 Verify that you have installed ROS Noetic. Create a ROS Workspace and clone this ROS package inside it
 
 ```
-git clone -b doxygen https://github.com/RiccardoZuppetti/RT2-Assignment2.git rt2_assignment2
+git clone -b sphinx https://github.com/RiccardoZuppetti/RT2-Assignment2.git rt2_assignment2
 ```
 
 Then build the workspace using the `catkin_make` command.
