@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-## @package rt2_assignment2
+##  \package rt2_assignment2
 #
 #   \file go_to_point.py
 #   \brief This script allows to the robot to reach a random goal position
