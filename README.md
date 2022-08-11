@@ -1,6 +1,6 @@
-# Research Track II - Second Assignment - Doxygen Branch
+# Research Track II - Second Assignment - Sphinx Branch
 
-In this branch it is possible to find the code to execute the project with the Doxygen documentation.
+In this branch it is possible to find the code to execute the project with the Sphinx documentation.
 
 # How to Run
 
@@ -27,5 +27,3 @@ jupyter notebook --allow-root --ip 0.0.0.0
 ```
 
 From this software open the "user_interface.ipynb" file located in `rt2_assignment2/notebook`
-
-[Here](https://github.com/RiccardoZuppetti/RT2-Assignment2/blob/doxygen/docs/html/index.html) it is possible to visualize the documentation.
