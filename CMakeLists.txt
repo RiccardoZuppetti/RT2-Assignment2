@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(rt2_assignment2)
+project(rt2_assignment1)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,13 +8,11 @@ project(rt2_assignment2)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-geometry_msgs
   roscpp
   rospy
-  std_msgs
+  message_generation
   actionlib
   actionlib_msgs
-  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -65,16 +63,15 @@ geometry_msgs
  )
 
 ## Generate actions in the 'action' folder
- add_action_files(
-  FILES
-  Planning.action
- )
+  add_action_files(
+    FILES
+    Planning.action
+#   Action2.action
+  )
 
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
- DEPENDENCIES
- actionlib_msgs
- geometry_msgs
+  DEPENDENCIES actionlib_msgs
  )
 
 ################################################
@@ -170,7 +167,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
  catkin_install_python(PROGRAMS
-   scripts/go_to_point.py
+   scripts/go_to_point.py scripts/user_interface.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

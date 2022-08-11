@@ -1,13 +1,13 @@
-# Research Track II - Second Assignment - Main Branch
+# Research Track II - Second Assignment - Doxygen Branch
 
-In this branch it is possible to find the code to execute the project, without any documentation.
+In this branch it is possible to find the code to execute the project with the Doxygen documentation.
 
 # How to Run
 
 Verify that you have installed ROS Noetic. Create a ROS Workspace and clone this ROS package inside it
 
 ```
-git clone -b main https://github.com/RiccardoZuppetti/RT2-Assignment2.git rt2_assignment2
+git clone -b doxygen https://github.com/RiccardoZuppetti/RT2-Assignment2.git rt2_assignment2
 ```
 
 Then build the workspace using the `catkin_make` command.
@@ -27,3 +27,5 @@ jupyter notebook --allow-root --ip 0.0.0.0
 ```
 
 From this software open the "user_interface.ipynb" file located in `rt2_assignment2/notebook`
+
+[Here](https://github.com/RiccardoZuppetti/RT2-Assignment2/blob/doxygen/docs/html/index.html) it is possible to visualize the documentation.
