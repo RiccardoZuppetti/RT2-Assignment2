@@ -32,9 +32,9 @@
 */
 
 #include "ros/ros.h"
-#include "rt2_assignment1/Command.h"
-#include "rt2_assignment1/RandomPosition.h"
-#include <rt2_assignment1/PlanningAction.h>
+#include "rt2_assignment2/Command.h"
+#include "rt2_assignment2/RandomPosition.h"
+#include <rt2_assignment2/PlanningAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 
@@ -53,7 +53,7 @@ std_msgs::Bool reached;	// to state if the goal has been achieved or not
  *  received is "start" or it sets it to false if the command is different
  */
 
-bool user_interface(rt2_assignment1::Command::Request &req, rt2_assignment1::Command::Response &res){
+bool user_interface(rt2_assignment2::Command::Request &req, rt2_assignment2::Command::Response &res){
     if (req.command == "start"){
     	start = true;
     }
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	ros::Publisher pub=n2.advertise<std_msgs::Bool>("/reach", 1000);
     ros::Publisher pub_time=n3.advertise<std_msgs::Float32>("/time", 1000);
    
-    rt2_assignment1::RandomPosition rp;
+    rt2_assignment2::RandomPosition rp;
     rp.request.x_max = 5.0;
     rp.request.x_min = -5.0;
     rp.request.y_max = 5.0;
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
                 // the robot is not moving
                 // goal position requested
    		        client_rp.call(rp);
-                rt2_assignment1::PlanningGoal goal;
+                rt2_assignment2::PlanningGoal goal;
 			    goal.target_pose.header.frame_id = "base_link";
 			    goal.target_pose.header.stamp = ros::Time::now();
 			    goal.target_pose.pose.position.x = rp.response.x;
