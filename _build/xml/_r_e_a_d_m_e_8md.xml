@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="_r_e_a_d_m_e_8md" kind="file" language="Markdown">
+    <compoundname>README.md</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline><highlight class="normal">#<sp/>Research<sp/>Track<sp/>II<sp/>-<sp/>Second<sp/>Assignment<sp/>-<sp/>Sphinx<sp/>Branch</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">In<sp/>this<sp/>branch<sp/>it<sp/>is<sp/>possible<sp/>to<sp/>find<sp/>the<sp/>code<sp/>to<sp/>execute<sp/>the<sp/>project<sp/>with<sp/>the<sp/>Sphinx<sp/>documentation.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">#<sp/>How<sp/>to<sp/>Run</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Verify<sp/>that<sp/>you<sp/>have<sp/>installed<sp/>ROS<sp/>Noetic.<sp/>Create<sp/>a<sp/>ROS<sp/>Workspace<sp/>and<sp/>clone<sp/>this<sp/>ROS<sp/>package<sp/>inside<sp/>it</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">```</highlight></codeline>
+<codeline><highlight class="normal">git<sp/>clone<sp/>-b<sp/>sphinx<sp/>https://github.com/RiccardoZuppetti/RT2-Assignment2.git<sp/>rt2_assignment2</highlight></codeline>
+<codeline><highlight class="normal">```</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Then<sp/>build<sp/>the<sp/>workspace<sp/>using<sp/>the<sp/>`catkin_make`<sp/>command.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Modify<sp/>the<sp/>`.bashrc`<sp/>file,<sp/>using<sp/>the<sp/>command<sp/>`gedit<sp/>~/.bashrc`,<sp/>sourcing<sp/>the<sp/>ROS<sp/>environment<sp/>and<sp/>the<sp/>ROS<sp/>workspace.</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">To<sp/>run<sp/>this<sp/>project<sp/>open<sp/>a<sp/>terminal,<sp/>move<sp/>to<sp/>the<sp/>created<sp/>ROS<sp/>workspace<sp/>and<sp/>digit</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">```</highlight></codeline>
+<codeline><highlight class="normal">roslaunch<sp/>rt2_assignment2<sp/>sim.launch<sp/></highlight></codeline>
+<codeline><highlight class="normal">```</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">Then<sp/>to<sp/>open<sp/>the<sp/>jupyter<sp/>notebook,<sp/>open<sp/>a<sp/>second<sp/>terminal<sp/>and<sp/>digit</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">```</highlight></codeline>
+<codeline><highlight class="normal">jupyter<sp/>notebook<sp/>--allow-root<sp/>--ip<sp/>0.0.0.0</highlight></codeline>
+<codeline><highlight class="normal">```</highlight></codeline>
+<codeline></codeline>
+<codeline><highlight class="normal">From<sp/>this<sp/>software<sp/>open<sp/>the<sp/>&quot;user_interface.ipynb&quot;<sp/>file<sp/>located<sp/>in<sp/>`rt2_assignment2/notebook`</highlight></codeline>
+    </programlisting>
+    <location file="README.md"/>
+  </compounddef>
+</doxygen>

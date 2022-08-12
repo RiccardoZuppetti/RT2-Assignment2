@@ -1,0 +1,381 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="go__to__point_8py" kind="file" language="Python">
+    <compoundname>go_to_point.py</compoundname>
+    <innernamespace refid="namespacego__to__point">go_to_point</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1" refid="namespacego__to__point" refkind="compound"><highlight class="comment">#!<sp/>/usr/bin/env<sp/>python</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="3"><highlight class="stringliteral">..<sp/>module::<sp/>go_to_point</highlight></codeline>
+<codeline lineno="4"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>:platform:<sp/>Unix</highlight></codeline>
+<codeline lineno="5"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>:synopsis:<sp/>This<sp/>file<sp/>implements<sp/>the<sp/>behaviour<sp/>that<sp/>allows<sp/>the<sp/>robot<sp/>to<sp/>reach<sp/>a<sp/>goal.</highlight></codeline>
+<codeline lineno="6"><highlight class="stringliteral">..<sp/>moduleauthor::<sp/>Riccardo<sp/>Zuppetti</highlight></codeline>
+<codeline lineno="7"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="8"><highlight class="stringliteral">This<sp/>node<sp/>allows<sp/>the<sp/>robot<sp/>to<sp/>reach<sp/>a<sp/>position<sp/>with<sp/>a<sp/>given<sp/>orientation.</highlight></codeline>
+<codeline lineno="9"><highlight class="stringliteral">Firstly<sp/>it<sp/>orients<sp/>the<sp/>robot<sp/>in<sp/>the<sp/>direction<sp/>of<sp/>the<sp/>goal<sp/>and<sp/>moves<sp/>towards<sp/>it.</highlight></codeline>
+<codeline lineno="10"><highlight class="stringliteral">Once<sp/>the<sp/>robot<sp/>has<sp/>reached<sp/>the<sp/>correct<sp/>x<sp/>and<sp/>y<sp/>coordinates<sp/>it<sp/>rotates<sp/>to<sp/>reach</highlight></codeline>
+<codeline lineno="11"><highlight class="stringliteral">the<sp/>correct<sp/>orientation.<sp/>The<sp/>velocities,<sp/>both<sp/>angular<sp/>and<sp/>linear<sp/>are<sp/>set<sp/>by</highlight></codeline>
+<codeline lineno="12"><highlight class="stringliteral">the<sp/>node<sp/>*user_interface*<sp/>and<sp/>are<sp/>received<sp/>on<sp/>the<sp/>topic<sp/>*/vel*.<sp/>If<sp/>the<sp/>goal</highlight></codeline>
+<codeline lineno="13"><highlight class="stringliteral">is<sp/>set<sp/>cancelled<sp/>by<sp/>the<sp/>client<sp/>of<sp/>the<sp/>action<sp/>server<sp/>then<sp/>the<sp/>velocities<sp/>are</highlight></codeline>
+<codeline lineno="14"><highlight class="stringliteral">all<sp/>set<sp/>to<sp/>zero<sp/>and<sp/>the<sp/>action<sp/>server<sp/>is<sp/>set<sp/>preempted.<sp/><sp/></highlight></codeline>
+<codeline lineno="15"><highlight class="stringliteral"><sp/></highlight></codeline>
+<codeline lineno="16"><highlight class="stringliteral">Subscribes<sp/>to:</highlight></codeline>
+<codeline lineno="17"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="18"><highlight class="stringliteral">/odom<sp/>topic<sp/>where<sp/>the<sp/>simulator<sp/>publishes<sp/>the<sp/>robot<sp/>position</highlight></codeline>
+<codeline lineno="19"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="20"><highlight class="stringliteral">/vel<sp/>where<sp/>the<sp/>*user_interface*<sp/>publishes<sp/>the<sp/>requested<sp/>velocities</highlight></codeline>
+<codeline lineno="21"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="22"><highlight class="stringliteral">Publishes<sp/>to:</highlight></codeline>
+<codeline lineno="23"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="24"><highlight class="stringliteral">/cmd_vel<sp/>the<sp/>desired<sp/>robot<sp/>velocity,<sp/>it<sp/>depends<sp/>on<sp/>the<sp/>state</highlight></codeline>
+<codeline lineno="25"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="26"><highlight class="stringliteral">Service<sp/>:</highlight></codeline>
+<codeline lineno="27"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="28"><highlight class="stringliteral">/go_to_point<sp/>to<sp/>start<sp/>the<sp/>robot<sp/>motion.</highlight></codeline>
+<codeline lineno="29"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>rospy</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>geometry_msgs.msg<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Twist,<sp/>Point</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>nav_msgs.msg<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Odometry</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>tf<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>transformations</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>math</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>actionlib</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>rt2_assignment2.msg</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight><highlight class="comment">#<sp/>robot<sp/>state<sp/>variables</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal">position_<sp/>=<sp/>Point()</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Point:<sp/>actual<sp/>robot<sp/>position</highlight></codeline>
+<codeline lineno="42"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal">yaw_<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>actual<sp/>robot<sp/>angle</highlight></codeline>
+<codeline lineno="45"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal">position_<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="47"><highlight class="normal">state_<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Int:<sp/>state<sp/>of<sp/>the<sp/>server</highlight></codeline>
+<codeline lineno="49"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal">pub_<sp/>=<sp/></highlight><highlight class="keywordtype">None</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;To<sp/>publish<sp/>on<sp/>the<sp/>*/cmd_vel*<sp/>topic</highlight></codeline>
+<codeline lineno="52"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight><highlight class="comment">#<sp/>Auxiliary<sp/>variables</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal">des_position<sp/>=<sp/>Point()</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Point:<sp/>desired<sp/>robot<sp/>position</highlight></codeline>
+<codeline lineno="57"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal">des_position.z<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>desired<sp/>robot<sp/>orientation</highlight></codeline>
+<codeline lineno="60"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal">temp_flag<sp/>=<sp/></highlight><highlight class="keyword">False</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Bool:<sp/>to<sp/>store<sp/>wheater<sp/>the<sp/>goal<sp/>has<sp/>been<sp/>reached</highlight></codeline>
+<codeline lineno="63"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal"></highlight><highlight class="comment">#<sp/>parameters<sp/>for<sp/>control</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="66"><highlight class="normal">yaw_precision_<sp/>=<sp/>math.pi<sp/>/<sp/>9</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>+/-<sp/>20<sp/>degrees<sp/>of<sp/>precision<sp/>allowed</highlight></codeline>
+<codeline lineno="68"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="69"><highlight class="normal">yaw_precision_2_<sp/>=<sp/>math.pi<sp/>/<sp/>90</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>+/-<sp/>2<sp/>degrees<sp/>of<sp/>precision<sp/>allowed</highlight></codeline>
+<codeline lineno="71"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="72"><highlight class="normal">dist_precision_<sp/>=<sp/>0.1</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>precision<sp/>of<sp/>the<sp/>linear<sp/>distace<sp/>allowed</highlight></codeline>
+<codeline lineno="74"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="75"><highlight class="normal">kp_a<sp/>=<sp/>-3.0</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>coefficent</highlight></codeline>
+<codeline lineno="77"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="78"><highlight class="normal">kp_d<sp/>=<sp/>0.2</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>coefficent</highlight></codeline>
+<codeline lineno="80"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="81"><highlight class="normal">ub_a<sp/>=<sp/>0.6</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>coefficent</highlight></codeline>
+<codeline lineno="83"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal">lb_a<sp/>=<sp/>-0.5</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>coefficent</highlight></codeline>
+<codeline lineno="86"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="87"><highlight class="normal">ub_d<sp/>=<sp/>0.6</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Float:<sp/>coefficent</highlight></codeline>
+<codeline lineno="89"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="90"><highlight class="normal">vel_<sp/>=<sp/>Twist()</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;Twist:<sp/>the<sp/>requested<sp/>velocities</highlight></codeline>
+<codeline lineno="92"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="93"><highlight class="normal"></highlight></codeline>
+<codeline lineno="94"><highlight class="normal"></highlight><highlight class="comment">#<sp/>parameter<sp/>for<sp/>action</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="95"><highlight class="normal">action_server<sp/>=<sp/></highlight><highlight class="keywordtype">None</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="96"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;&quot;&quot;To<sp/>initialize<sp/>the<sp/>action<sp/>server</highlight></codeline>
+<codeline lineno="97"><highlight class="stringliteral">&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="98"><highlight class="normal"></highlight></codeline>
+<codeline lineno="99"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1afea56a392e98b6db44754a04f7039ccd" kindref="member">clbk_vel</ref>(msg):</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="101"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>saves<sp/>the<sp/>data<sp/>received<sp/>by<sp/>the<sp/>subscriber<sp/>on<sp/>the<sp/>topic<sp/>*/vel*</highlight></codeline>
+<codeline lineno="102"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>in<sp/>a<sp/>global<sp/>variable<sp/>of<sp/>type<sp/>Twist,<sp/>Vel,<sp/>this<sp/>variable<sp/>will<sp/>be<sp/>used<sp/>when</highlight></codeline>
+<codeline lineno="103"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>there<sp/>is<sp/>the<sp/>need<sp/>to<sp/>set<sp/>a<sp/>new<sp/>velocity.</highlight></codeline>
+<codeline lineno="104"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="105"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="106"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>msg(Twist):<sp/>the<sp/>data<sp/>received<sp/>on<sp/>the<sp/>topic<sp/>*/vel*</highlight></codeline>
+<codeline lineno="107"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="108"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="109"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="110"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>vel_</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/>vel_.linear.x=msg.linear.x</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/>vel_.angular.z=msg.angular.z</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"></highlight></codeline>
+<codeline lineno="115"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1a36304a9f313b0579f7fc69fa01695524" kindref="member">clbk_odom</ref>(msg):</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="117"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>saves<sp/>the<sp/>data<sp/>received<sp/>by<sp/>the<sp/>subscriber<sp/>on<sp/>the<sp/>topic<sp/>*/odom*</highlight></codeline>
+<codeline lineno="118"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>in<sp/>the<sp/>global<sp/>variable<sp/>position<sp/>for<sp/>the<sp/>information<sp/>about<sp/>the<sp/>current<sp/>position</highlight></codeline>
+<codeline lineno="119"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>of<sp/>the<sp/>robot.<sp/>It<sp/>then<sp/>changes<sp/>the<sp/>format<sp/>of<sp/>the<sp/>orientation<sp/>from<sp/>quaternions<sp/>angles</highlight></codeline>
+<codeline lineno="120"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>to<sp/>euler<sp/>angles;<sp/>it<sp/>is<sp/>the<sp/>extracted<sp/>the<sp/>third<sp/>element<sp/>of<sp/>the<sp/>vector<sp/>and<sp/>it<sp/>is<sp/>saved</highlight></codeline>
+<codeline lineno="121"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>on<sp/>the<sp/>global<sp/>variable<sp/>*yaw_*</highlight></codeline>
+<codeline lineno="122"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="123"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="124"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>msg(Odometry):<sp/>the<sp/>data<sp/>received<sp/>on<sp/>the<sp/>topic<sp/>*/odom*</highlight></codeline>
+<codeline lineno="125"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="126"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="127"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="128"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>position_</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>yaw_</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"></highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>position</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/>position_<sp/>=<sp/>msg.pose.pose.position</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"></highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>yaw</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="136"><highlight class="normal"><sp/><sp/><sp/><sp/>quaternion<sp/>=<sp/>(</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>msg.pose.pose.orientation.x,</highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>msg.pose.pose.orientation.y,</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>msg.pose.pose.orientation.z,</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>msg.pose.pose.orientation.w)</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/><sp/><sp/>euler<sp/>=<sp/>transformations.euler_from_quaternion(quaternion)</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/>yaw_<sp/>=<sp/>euler[2]</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"></highlight></codeline>
+<codeline lineno="144"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1a31ee48e5cae36821049b572a96b7c8be" kindref="member">change_state</ref>(state):</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="146"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>receives<sp/>the<sp/>new<sp/>state<sp/>and<sp/>assigns<sp/>its<sp/>value<sp/>to<sp/>the<sp/>global<sp/></highlight></codeline>
+<codeline lineno="147"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>variable<sp/>*states_*.<sp/>Then<sp/>a<sp/>message<sp/>is<sp/>printed<sp/>to<sp/>know<sp/>which<sp/>one<sp/>is<sp/>the</highlight></codeline>
+<codeline lineno="148"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>new<sp/>state.</highlight></codeline>
+<codeline lineno="149"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="150"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="151"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>state(Int):<sp/>the<sp/>state<sp/>of<sp/>the<sp/>robot</highlight></codeline>
+<codeline lineno="152"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="153"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="154"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="155"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="156"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>state_</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"><sp/><sp/><sp/><sp/>state_<sp/>=<sp/>state</highlight></codeline>
+<codeline lineno="158"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">print</highlight><highlight class="normal"><sp/>(</highlight><highlight class="stringliteral">&apos;State<sp/>changed<sp/>to<sp/>[%s]&apos;</highlight><highlight class="normal"><sp/>%<sp/>state_)</highlight></codeline>
+<codeline lineno="159"><highlight class="normal"></highlight></codeline>
+<codeline lineno="160"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1ac688bb56fa84763ea2edefc30cae032a" kindref="member">normalize_angle</ref>(angle):</highlight></codeline>
+<codeline lineno="161"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="162"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>normalizes<sp/>the<sp/>angle<sp/>received<sp/>as<sp/>input,<sp/>it<sp/>doesn&apos;t<sp/>change<sp/></highlight></codeline>
+<codeline lineno="163"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>the<sp/>sign<sp/>but<sp/>it<sp/>reduces<sp/>the<sp/>magnitude<sp/>to<sp/>less<sp/>than<sp/>one<sp/>full<sp/>circle</highlight></codeline>
+<codeline lineno="164"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="165"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="166"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>angle(Float):<sp/>the<sp/>angle<sp/>I<sp/>want<sp/>to<sp/>normalize</highlight></codeline>
+<codeline lineno="167"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="168"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="169"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>angle(Float):<sp/>the<sp/>normalized<sp/>angle.</highlight></codeline>
+<codeline lineno="170"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="171"><highlight class="normal"><sp/><sp/><sp/><sp/>if(math.fabs(angle)<sp/>&gt;<sp/>math.pi):</highlight></codeline>
+<codeline lineno="172"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>angle<sp/>=<sp/>angle<sp/>-<sp/>(2<sp/>*<sp/>math.pi<sp/>*<sp/>angle)<sp/>/<sp/>(math.fabs(angle))</highlight></codeline>
+<codeline lineno="173"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>angle</highlight></codeline>
+<codeline lineno="174"><highlight class="normal"></highlight></codeline>
+<codeline lineno="175"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1a9c3011a3065fcbefcc1c5ad8c9979669" kindref="member">fix_yaw</ref>(des_pos):</highlight></codeline>
+<codeline lineno="176"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="177"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>calculates<sp/>the<sp/>desired<sp/>orientation<sp/>to<sp/>reach<sp/>the<sp/>x,y<sp/>point</highlight></codeline>
+<codeline lineno="178"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>and<sp/>set<sp/>the<sp/>angular<sp/>velocity<sp/>to<sp/>reach<sp/>it.<sp/>If<sp/>the<sp/>orientation<sp/>error<sp/>is<sp/></highlight></codeline>
+<codeline lineno="179"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>less<sp/>than<sp/>a<sp/>given<sp/>threshold<sp/>then<sp/>the<sp/>state<sp/>is<sp/>changed<sp/>to<sp/>the<sp/>behaviour</highlight></codeline>
+<codeline lineno="180"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>go<sp/>straight.</highlight></codeline>
+<codeline lineno="181"><highlight class="stringliteral"><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="182"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="183"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>des_pos(Point):<sp/>the<sp/>desired<sp/>x<sp/>and<sp/>y<sp/>coordinates</highlight></codeline>
+<codeline lineno="184"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="185"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="186"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="187"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="188"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>yaw_,<sp/>pub_,<sp/>yaw_precision_2_,<sp/>state_,<sp/>vel_</highlight></codeline>
+<codeline lineno="189"><highlight class="normal"><sp/><sp/><sp/><sp/>desired_yaw<sp/>=<sp/>math.atan2(des_pos.y<sp/>-<sp/>position_.y,<sp/>des_pos.x<sp/>-<sp/>position_.x)</highlight></codeline>
+<codeline lineno="190"><highlight class="normal"><sp/><sp/><sp/><sp/>err_yaw<sp/>=<sp/><ref refid="namespacego__to__point_1ac688bb56fa84763ea2edefc30cae032a" kindref="member">normalize_angle</ref>(desired_yaw<sp/>-<sp/>yaw_)</highlight></codeline>
+<codeline lineno="191"><highlight class="normal"><sp/><sp/><sp/><sp/>rospy.loginfo(err_yaw)</highlight></codeline>
+<codeline lineno="192"><highlight class="normal"><sp/><sp/><sp/><sp/>twist_msg<sp/>=<sp/>Twist()</highlight></codeline>
+<codeline lineno="193"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>math.fabs(err_yaw)<sp/>&gt;<sp/>yaw_precision_2_:</highlight></codeline>
+<codeline lineno="194"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>kp_a*err_yaw</highlight></codeline>
+<codeline lineno="195"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>twist_msg.angular.z<sp/>&gt;<sp/>ub_a:</highlight></codeline>
+<codeline lineno="196"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>vel_.angular.z</highlight></codeline>
+<codeline lineno="197"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">elif</highlight><highlight class="normal"><sp/>twist_msg.angular.z<sp/>&lt;<sp/>lb_a:</highlight></codeline>
+<codeline lineno="198"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>vel_.angular.z</highlight></codeline>
+<codeline lineno="199"><highlight class="normal"><sp/><sp/><sp/><sp/>pub_.publish(twist_msg)</highlight></codeline>
+<codeline lineno="200"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>state<sp/>change<sp/>conditions</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="201"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>math.fabs(err_yaw)<sp/>&lt;=<sp/>yaw_precision_2_:</highlight></codeline>
+<codeline lineno="202"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#print<sp/>(&apos;Yaw<sp/>error:<sp/>[%s]&apos;<sp/>%<sp/>err_yaw)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="203"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1a31ee48e5cae36821049b572a96b7c8be" kindref="member">change_state</ref>(1)</highlight></codeline>
+<codeline lineno="204"><highlight class="normal"></highlight></codeline>
+<codeline lineno="205"><highlight class="normal"></highlight></codeline>
+<codeline lineno="206"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1ac8579665c0fbf665f734476554fac37d" kindref="member">go_straight_ahead</ref>(des_pos):</highlight></codeline>
+<codeline lineno="207"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="208"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>calculates<sp/>the<sp/>desired<sp/>orientation<sp/>to<sp/>reach<sp/>the<sp/>x,y<sp/>point<sp/>and<sp/>the<sp/>distance<sp/>between<sp/>the<sp/>goal<sp/>both<sp/>linear<sp/>and<sp/>angular.</highlight></codeline>
+<codeline lineno="209"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>It<sp/>then<sp/>sets<sp/>the<sp/>linear<sp/>velocity.<sp/>It<sp/>also<sp/>set<sp/>an<sp/>angular<sp/>velocity<sp/>proportional<sp/>to<sp/>the<sp/>error<sp/>to<sp/>slightly<sp/>correct<sp/>the<sp/>direction<sp/>of<sp/>the<sp/>line<sp/>when<sp/>needed.</highlight></codeline>
+<codeline lineno="210"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>If<sp/>the<sp/>distance<sp/>between<sp/>the<sp/>goal<sp/>is<sp/>less<sp/>than<sp/>a<sp/>given<sp/>threshold<sp/>the<sp/>state<sp/>is<sp/>changed<sp/>to<sp/>the<sp/>fix<sp/>final<sp/>orientation<sp/>behaviour.</highlight></codeline>
+<codeline lineno="211"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="212"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="213"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>des_pos(Point):<sp/>the<sp/>desired<sp/>x<sp/>and<sp/>y<sp/>coordinates</highlight></codeline>
+<codeline lineno="214"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="215"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="216"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="217"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="218"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>yaw_,<sp/>pub_,<sp/>yaw_precision_,<sp/>state_,<sp/>vel_</highlight></codeline>
+<codeline lineno="219"><highlight class="normal"><sp/><sp/><sp/><sp/>desired_yaw<sp/>=<sp/>math.atan2(des_pos.y<sp/>-<sp/>position_.y,<sp/>des_pos.x<sp/>-<sp/>position_.x)</highlight></codeline>
+<codeline lineno="220"><highlight class="normal"><sp/><sp/><sp/><sp/>err_yaw<sp/>=<sp/>desired_yaw<sp/>-<sp/>yaw_</highlight></codeline>
+<codeline lineno="221"><highlight class="normal"><sp/><sp/><sp/><sp/>err_pos<sp/>=<sp/>math.sqrt(pow(des_pos.y<sp/>-<sp/>position_.y,<sp/>2)<sp/>+</highlight></codeline>
+<codeline lineno="222"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pow(des_pos.x<sp/>-<sp/>position_.x,<sp/>2))</highlight></codeline>
+<codeline lineno="223"><highlight class="normal"><sp/><sp/><sp/><sp/>err_yaw<sp/>=<sp/><ref refid="namespacego__to__point_1ac688bb56fa84763ea2edefc30cae032a" kindref="member">normalize_angle</ref>(desired_yaw<sp/>-<sp/>yaw_)</highlight></codeline>
+<codeline lineno="224"><highlight class="normal"><sp/><sp/><sp/><sp/>rospy.loginfo(err_yaw)</highlight></codeline>
+<codeline lineno="225"><highlight class="normal"></highlight></codeline>
+<codeline lineno="226"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>err_pos<sp/>&gt;<sp/>dist_precision_:</highlight></codeline>
+<codeline lineno="227"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg<sp/>=<sp/>Twist()</highlight></codeline>
+<codeline lineno="228"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.linear.x<sp/>=<sp/>vel_.linear.x</highlight></codeline>
+<codeline lineno="229"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>twist_msg.linear.x<sp/>&gt;<sp/>ub_d:</highlight></codeline>
+<codeline lineno="230"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.linear.x<sp/>=<sp/>vel_.linear.x</highlight></codeline>
+<codeline lineno="231"><highlight class="normal"></highlight></codeline>
+<codeline lineno="232"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>vel_.angular.z*err_yaw</highlight></codeline>
+<codeline lineno="233"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pub_.publish(twist_msg)</highlight></codeline>
+<codeline lineno="234"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal">:<sp/></highlight><highlight class="comment">#<sp/>state<sp/>change<sp/>conditions</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="235"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>(&apos;Position<sp/>error:<sp/>[%s]&apos;<sp/>%<sp/>err_pos)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="236"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1a31ee48e5cae36821049b572a96b7c8be" kindref="member">change_state</ref>(2)</highlight></codeline>
+<codeline lineno="237"><highlight class="normal"></highlight></codeline>
+<codeline lineno="238"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>state<sp/>change<sp/>conditions</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="239"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>math.fabs(err_yaw)<sp/>&gt;<sp/>yaw_precision_:</highlight></codeline>
+<codeline lineno="240"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>(&apos;Yaw<sp/>error:<sp/>[%s]&apos;<sp/>%<sp/>err_yaw)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="241"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1a31ee48e5cae36821049b572a96b7c8be" kindref="member">change_state</ref>(0)</highlight></codeline>
+<codeline lineno="242"><highlight class="normal"></highlight></codeline>
+<codeline lineno="243"><highlight class="normal"></highlight></codeline>
+<codeline lineno="244"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1a4a406386ca62830c19c93949e923f7bd" kindref="member">fix_final_yaw</ref>(des_yaw):</highlight></codeline>
+<codeline lineno="245"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="246"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>calculates<sp/>the<sp/>error<sp/>between<sp/>the<sp/>current<sp/>orientation<sp/>and<sp/>the<sp/></highlight></codeline>
+<codeline lineno="247"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>desired<sp/>one.<sp/>It<sp/>then<sp/>sets<sp/>the<sp/>angular<sp/>velocity<sp/>to<sp/>obtain<sp/>the<sp/>correct<sp/>orientation.</highlight></codeline>
+<codeline lineno="248"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>If<sp/>the<sp/>error<sp/>is<sp/>less<sp/>than<sp/>a<sp/>given<sp/>threshold<sp/>then<sp/>the<sp/>state<sp/>is<sp/>changed<sp/>to<sp/>done.</highlight></codeline>
+<codeline lineno="249"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="250"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="251"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>des_yaw(Float):<sp/>the<sp/>desired<sp/>orientation</highlight></codeline>
+<codeline lineno="252"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="253"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="254"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="255"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="256"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>vel_</highlight></codeline>
+<codeline lineno="257"><highlight class="normal"><sp/><sp/><sp/><sp/>err_yaw<sp/>=<sp/><ref refid="namespacego__to__point_1ac688bb56fa84763ea2edefc30cae032a" kindref="member">normalize_angle</ref>(des_yaw<sp/>-<sp/>yaw_)</highlight></codeline>
+<codeline lineno="258"><highlight class="normal"><sp/><sp/><sp/><sp/>rospy.loginfo(err_yaw)</highlight></codeline>
+<codeline lineno="259"><highlight class="normal"><sp/><sp/><sp/><sp/>twist_msg<sp/>=<sp/>Twist()</highlight></codeline>
+<codeline lineno="260"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>math.fabs(err_yaw)<sp/>&gt;<sp/>yaw_precision_2_:</highlight></codeline>
+<codeline lineno="261"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>vel_.angular.z</highlight></codeline>
+<codeline lineno="262"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>twist_msg.angular.z<sp/>&gt;<sp/>ub_a:</highlight></codeline>
+<codeline lineno="263"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>vel_.angular.z</highlight></codeline>
+<codeline lineno="264"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">elif</highlight><highlight class="normal"><sp/>twist_msg.angular.z<sp/>&lt;<sp/>lb_a:</highlight></codeline>
+<codeline lineno="265"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>vel_.angular.z</highlight></codeline>
+<codeline lineno="266"><highlight class="normal"><sp/><sp/><sp/><sp/>pub_.publish(twist_msg)</highlight></codeline>
+<codeline lineno="267"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>state<sp/>change<sp/>conditions</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="268"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>math.fabs(err_yaw)<sp/>&lt;=<sp/>yaw_precision_2_:</highlight></codeline>
+<codeline lineno="269"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#print<sp/>(&apos;Yaw<sp/>error:<sp/>[%s]&apos;<sp/>%<sp/>err_yaw)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="270"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1a31ee48e5cae36821049b572a96b7c8be" kindref="member">change_state</ref>(3)</highlight></codeline>
+<codeline lineno="271"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="272"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1ac2587220a4ac9c845bc9c5b0b45d5835" kindref="member">done</ref>():</highlight></codeline>
+<codeline lineno="273"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="274"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>puts<sp/>to<sp/>zero<sp/>all<sp/>the<sp/>velocities,<sp/>angular<sp/>and<sp/>linear,<sp/>and<sp/>sets</highlight></codeline>
+<codeline lineno="275"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>the<sp/>goal<sp/>as<sp/>succeeded.<sp/><sp/></highlight></codeline>
+<codeline lineno="276"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="277"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="278"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="279"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="280"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="281"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="282"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="283"><highlight class="normal"><sp/><sp/><sp/><sp/>twist_msg<sp/>=<sp/>Twist()</highlight></codeline>
+<codeline lineno="284"><highlight class="normal"><sp/><sp/><sp/><sp/>twist_msg.linear.x<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="285"><highlight class="normal"><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="286"><highlight class="normal"><sp/><sp/><sp/><sp/>pub_.publish(twist_msg)</highlight></codeline>
+<codeline lineno="287"><highlight class="normal"><sp/><sp/><sp/><sp/>action_server.set_succeeded()</highlight></codeline>
+<codeline lineno="288"><highlight class="normal"><sp/><sp/><sp/><sp/>temp_flag<sp/>=<sp/></highlight><highlight class="keyword">True</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="289"><highlight class="normal"><sp/></highlight></codeline>
+<codeline lineno="290"><highlight class="normal"></highlight></codeline>
+<codeline lineno="291"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1a2203d17b7e563bee20ed4c988548df45" kindref="member">go_to_point</ref>(goal):</highlight></codeline>
+<codeline lineno="292"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="293"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>is<sp/>called<sp/>when<sp/>a<sp/>request<sp/>to<sp/>the<sp/>server<sp/>is<sp/>made.<sp/>It<sp/>sets<sp/></highlight></codeline>
+<codeline lineno="294"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>all<sp/>the<sp/>global<sp/>variables<sp/>needed,<sp/>then<sp/>it<sp/>enteres<sp/>a<sp/>while<sp/>loop.<sp/>In<sp/>the<sp/>while</highlight></codeline>
+<codeline lineno="295"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>loop<sp/>it<sp/>always<sp/>check<sp/>if<sp/>the<sp/>goal<sp/>is<sp/>preempted<sp/>and<sp/>if<sp/>that<sp/>is<sp/>the<sp/>case<sp/>it</highlight></codeline>
+<codeline lineno="296"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>sets<sp/>all<sp/>the<sp/>velocities<sp/>to<sp/>zero<sp/>and<sp/>it<sp/>set<sp/>the<sp/>goal<sp/>as<sp/>preempted.<sp/>If<sp/></highlight></codeline>
+<codeline lineno="297"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>the<sp/>action<sp/>server<sp/>is<sp/>not<sp/>preempted<sp/>it<sp/>checks<sp/>which<sp/>is<sp/>the<sp/>state<sp/>and<sp/>it<sp/></highlight></codeline>
+<codeline lineno="298"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>calls<sp/>the<sp/>corresponding<sp/>function.<sp/><sp/></highlight></codeline>
+<codeline lineno="299"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="300"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="301"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>goal:<sp/>the<sp/>desired<sp/>position<sp/>and<sp/>orientation<sp/>to<sp/>obtain</highlight></codeline>
+<codeline lineno="302"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="303"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="304"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="305"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="306"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>state_,<sp/>des_position,<sp/>action_server,<sp/>temp_flag</highlight></codeline>
+<codeline lineno="307"><highlight class="normal"><sp/><sp/><sp/><sp/>des_position.x<sp/>=<sp/>goal.target_pose.pose.position.x</highlight></codeline>
+<codeline lineno="308"><highlight class="normal"><sp/><sp/><sp/><sp/>des_position.y<sp/>=<sp/>goal.target_pose.pose.position.y</highlight></codeline>
+<codeline lineno="309"><highlight class="normal"><sp/><sp/><sp/><sp/>des_yaw<sp/>=<sp/>goal.target_pose.pose.position.z</highlight></codeline>
+<codeline lineno="310"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1a31ee48e5cae36821049b572a96b7c8be" kindref="member">change_state</ref>(0)</highlight></codeline>
+<codeline lineno="311"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">True</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="312"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>if<sp/>the<sp/>action<sp/>is<sp/>preempted</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="313"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>action_server.is_preempt_requested():</highlight></codeline>
+<codeline lineno="314"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>rospy.loginfo(</highlight><highlight class="stringliteral">&apos;Goal<sp/>was<sp/>preempted&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="315"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>publish<sp/>a<sp/>null<sp/>velocity</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="316"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg<sp/>=<sp/>Twist()</highlight></codeline>
+<codeline lineno="317"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.linear.x<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="318"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>twist_msg.angular.z<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="319"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pub_.publish(twist_msg)</highlight></codeline>
+<codeline lineno="320"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>goal<sp/>preempted</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="321"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>action_server.set_preempted()</highlight></codeline>
+<codeline lineno="322"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>temp_flag<sp/>=<sp/></highlight><highlight class="keyword">False</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="323"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="324"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">elif</highlight><highlight class="normal"><sp/>state_<sp/>==<sp/>0:</highlight></codeline>
+<codeline lineno="325"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>orientation<sp/>towards<sp/>the<sp/>goal</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="326"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1a9c3011a3065fcbefcc1c5ad8c9979669" kindref="member">fix_yaw</ref>(des_position)<sp/><sp/></highlight></codeline>
+<codeline lineno="327"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">elif</highlight><highlight class="normal"><sp/>state_<sp/>==<sp/>1:</highlight></codeline>
+<codeline lineno="328"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>moving<sp/>in<sp/>straight<sp/>direction</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="329"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1ac8579665c0fbf665f734476554fac37d" kindref="member">go_straight_ahead</ref>(des_position)<sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="330"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">elif</highlight><highlight class="normal"><sp/>state_<sp/>==<sp/>2:</highlight></codeline>
+<codeline lineno="331"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>final<sp/>orientation</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="332"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1a4a406386ca62830c19c93949e923f7bd" kindref="member">fix_final_yaw</ref>(des_yaw)<sp/></highlight></codeline>
+<codeline lineno="333"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">elif</highlight><highlight class="normal"><sp/>state_<sp/>==<sp/>3:</highlight></codeline>
+<codeline lineno="334"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>goal<sp/>reached</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="335"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1ac2587220a4ac9c845bc9c5b0b45d5835" kindref="member">done</ref>()</highlight></codeline>
+<codeline lineno="336"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="337"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">True</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="338"><highlight class="normal"></highlight></codeline>
+<codeline lineno="339"><highlight class="normal"></highlight></codeline>
+<codeline lineno="340"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="namespacego__to__point_1ab92bd6db1ec323a4d795ed6cb40aebe1" kindref="member">main</ref>():</highlight></codeline>
+<codeline lineno="341"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="342"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>function<sp/>is<sp/>called<sp/>when<sp/>the<sp/>program<sp/>is<sp/>first<sp/>requested<sp/>to<sp/>run.<sp/>It</highlight></codeline>
+<codeline lineno="343"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>initializes<sp/>all<sp/>the<sp/>publishers,<sp/>subscribers,<sp/>services<sp/>and<sp/>then<sp/>waits<sp/>for</highlight></codeline>
+<codeline lineno="344"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>a<sp/>request<sp/>for<sp/>the<sp/>action<sp/>server<sp/>that<sp/>should<sp/>come<sp/>from<sp/>the<sp/>user_interface</highlight></codeline>
+<codeline lineno="345"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>node.</highlight></codeline>
+<codeline lineno="346"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="347"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Args<sp/>:</highlight></codeline>
+<codeline lineno="348"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="349"><highlight class="stringliteral"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="350"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>Returns<sp/>:</highlight></codeline>
+<codeline lineno="351"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>None</highlight></codeline>
+<codeline lineno="352"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="353"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">global</highlight><highlight class="normal"><sp/>pub_,<sp/>action_server</highlight></codeline>
+<codeline lineno="354"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>initialize<sp/>the<sp/>goal</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="355"><highlight class="normal"><sp/><sp/><sp/><sp/>rospy.init_node(</highlight><highlight class="stringliteral">&apos;go_to_point&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="356"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>publish<sp/>the<sp/>velocity</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="357"><highlight class="normal"><sp/><sp/><sp/><sp/>pub_<sp/>=<sp/>rospy.Publisher(</highlight><highlight class="stringliteral">&apos;/cmd_vel&apos;</highlight><highlight class="normal">,<sp/>Twist,<sp/>queue_size=1)</highlight></codeline>
+<codeline lineno="358"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>subscriber<sp/>to<sp/>the<sp/>/odom<sp/>topic</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="359"><highlight class="normal"><sp/><sp/><sp/><sp/>sub_odom<sp/>=<sp/>rospy.Subscriber(</highlight><highlight class="stringliteral">&apos;/odom&apos;</highlight><highlight class="normal">,<sp/>Odometry,<sp/>clbk_odom)</highlight></codeline>
+<codeline lineno="360"><highlight class="normal"><sp/><sp/><sp/><sp/>sub_vel<sp/>=<sp/>rospy.Subscriber(</highlight><highlight class="stringliteral">&apos;/vel&apos;</highlight><highlight class="normal">,<sp/>Twist,<sp/>clbk_vel)</highlight></codeline>
+<codeline lineno="361"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>initialize<sp/>the<sp/>action<sp/>server</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="362"><highlight class="normal"><sp/><sp/><sp/><sp/>action_server<sp/>=<sp/>actionlib.SimpleActionServer(</highlight><highlight class="stringliteral">&apos;/go_to_point&apos;</highlight><highlight class="normal">,<sp/>rt2_assignment2.msg.PlanningAction,<sp/>go_to_point,<sp/>auto_start=</highlight><highlight class="keyword">False</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="363"><highlight class="normal"><sp/><sp/><sp/><sp/>action_server.start()</highlight></codeline>
+<codeline lineno="364"><highlight class="normal"><sp/><sp/><sp/><sp/>rospy.spin()</highlight></codeline>
+<codeline lineno="365"><highlight class="normal"></highlight></codeline>
+<codeline lineno="366"><highlight class="normal"></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>__name__<sp/>==<sp/></highlight><highlight class="stringliteral">&apos;__main__&apos;</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="367"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespacego__to__point_1ab92bd6db1ec323a4d795ed6cb40aebe1" kindref="member">main</ref>()</highlight></codeline>
+    </programlisting>
+    <location file="scripts/go_to_point.py"/>
+  </compounddef>
+</doxygen>

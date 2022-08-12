@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="md__r_e_a_d_m_e" kind="page">
+    <compoundname>md_README</compoundname>
+    <title>Research Track II - Second Assignment - Sphinx Branch</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>In this branch it is possible to find the code to execute the project with the Sphinx documentation.</para>
+<sect1 id="md__r_e_a_d_m_e_1autotoc_md1">
+<title>How to Run</title>
+<para>Verify that you have installed ROS Noetic. Create a ROS Workspace and clone this ROS package inside it</para>
+<para><programlisting><codeline><highlight class="normal">git<sp/>clone<sp/>-b<sp/>sphinx<sp/>https://github.com/RiccardoZuppetti/RT2-Assignment2.git<sp/>rt2_assignment2</highlight></codeline>
+</programlisting></para>
+<para>Then build the workspace using the <computeroutput>catkin_make</computeroutput> command.</para>
+<para>Modify the <computeroutput>.bashrc</computeroutput> file, using the command <computeroutput>gedit ~/.bashrc</computeroutput>, sourcing the ROS environment and the ROS workspace.</para>
+<para>To run this project open a terminal, move to the created ROS workspace and digit</para>
+<para><programlisting><codeline><highlight class="normal">roslaunch<sp/>rt2_assignment2<sp/>sim.launch<sp/></highlight></codeline>
+</programlisting></para>
+<para>Then to open the jupyter notebook, open a second terminal and digit</para>
+<para><programlisting><codeline><highlight class="normal">jupyter<sp/>notebook<sp/>--allow-root<sp/>--ip<sp/>0.0.0.0</highlight></codeline>
+</programlisting></para>
+<para>From this software open the &quot;user_interface.ipynb&quot; file located in <computeroutput>rt2_assignment2/notebook</computeroutput> </para>
+</sect1>
+    </detaileddescription>
+  </compounddef>
+</doxygen>
