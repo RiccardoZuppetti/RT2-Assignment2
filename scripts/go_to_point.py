@@ -205,7 +205,7 @@ def fix_yaw(des_pos):
 
 def go_straight_ahead(des_pos):
     """
-	This function calculates the desired orientation to reach the x,y point and the distance between the goal both linear and angular.
+    This function calculates the desired orientation to reach the x,y point and the distance between the goal both linear and angular.
     It then sets the linear velocity. It also set an angular velocity proportional to the error to slightly correct the direction of the line when needed.
     If the distance between the goal is less than a given threshold the state is changed to the fix final orientation behaviour.
     
