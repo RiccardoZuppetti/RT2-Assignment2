@@ -27,3 +27,5 @@ jupyter notebook --allow-root --ip 0.0.0.0
 ```
 
 From this software open the "user_interface.ipynb" file located in `rt2_assignment2/notebook`
+
+It is possible to visualize the Sphinx documentation opening the `index.html` file in the `/_build/html` folder.
