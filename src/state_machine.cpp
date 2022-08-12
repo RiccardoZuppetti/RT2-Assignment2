@@ -37,6 +37,8 @@
 #include <rt2_assignment2/PlanningAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 
 bool start = false; // boolean that depends on the the command received
 bool moving = false; // boolean to know if the robot is moving or not
@@ -144,7 +146,7 @@ int main(int argc, char **argv)
             // the user requested to stop the robot
             if(moving){
                 // the robot is already moving
-            	ac.cancelAllGoals(); / all goals are canceled
+            	ac.cancelAllGoals(); // all goals are canceled
 				std::cout << "Goal cancelled" << std::endl;
 				moving = false;
                 reached.data=false;
